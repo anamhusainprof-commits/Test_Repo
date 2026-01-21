@@ -4,10 +4,6 @@
 
 # COMMAND ----------
 
-ggg
-
-# COMMAND ----------
-
 # DBTITLE 1,Cell 2
 df=spark.read.format("csv").option("header","true").option("inferSchema","true").load("/Volumes/databricks_simulated_retail_customer_data/v01/source_files")
 #df.show()
@@ -35,10 +31,10 @@ df.coalesce(1).write.format("csv").mode("overwrite").save("/Volumes/test_catalog
 #but not efficient therefore should not be used. 
 
 #Other saving modes are:
-#- overwrite
-#- append
-#- ignore
-#- errorIfExists
+#- overwrite- overwrite the data already present in the folder
+#- append - appends the data to the folder
+#- ignore - ignore the operation if the folder already exists
+#- errorIfExists - throw an error if the folder already exists
 
 # COMMAND ----------
 
@@ -63,5 +59,46 @@ display(df1)
 
 # COMMAND ----------
 
+# DBTITLE 1,Cell 8
+from pyspark.sql.functions import col
+df1 = df1.withColumn("units_purchased", col("units_purchased") * 2)
+display(df1)
+
+# COMMAND ----------
+
+from pyspark.sql.functions import *
+d1=df1.withColumn("new_date_column", current_timestamp())
+display(d1)
+
+# COMMAND ----------
+
+# DBTITLE 1,Cell 10
+from pyspark.sql.functions import *
+df1=df1.withColumn("new_word_column",lit("hello"))
+display(df1)
+
+# COMMAND ----------
+
 # MAGIC %md
+# MAGIC #WithColumnRename
 # MAGIC
+# MAGIC Used to Rename Column
+
+# COMMAND ----------
+
+# DBTITLE 1,Cell 12
+from pyspark.sql.functions import col
+df1 = df1.withColumnRenamed("new_word_column", "hello_column")
+display(df1)
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC Explode
+# MAGIC
+# MAGIC It creates a new row for each element in the array
+# MAGIC
+
+# COMMAND ----------
+
+
