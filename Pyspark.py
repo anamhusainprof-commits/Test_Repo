@@ -94,6 +94,10 @@ display(df1)
 # COMMAND ----------
 
 # MAGIC %md
+# MAGIC Split - Returns a new column with array type after splitting the column by delimiter
+# MAGIC
+# MAGIC
+# MAGIC
 # MAGIC Explode
 # MAGIC
 # MAGIC It creates a new row for each element in the array
@@ -101,4 +105,33 @@ display(df1)
 
 # COMMAND ----------
 
+# DBTITLE 1,Untitled
+from pyspark.sql.functions import split, col
 
+#Split the column Customer_name into an array
+df_array = df.withColumn(
+    "name_array",
+    split(col("Customer_name"), "\\,")
+)
+display(df_array)
+
+
+# COMMAND ----------
+
+from pyspark.sql.functions import explode
+
+df_exploded = df_array.withColumn("name_element", explode("name_array"))
+display(df_exploded)
+
+# COMMAND ----------
+
+from pyspark.sql.functions import *
+
+df_array_trans = df_array.withColumn("address_array", array(col("city"), col("postcode")))
+display(df_array_trans)
+
+
+# COMMAND ----------
+
+# DBTITLE 1,Cell 17
+df.withColumn("address_array", array_contains(col("address_array"), "NY"))
