@@ -204,3 +204,61 @@ from pyspark.sql.functions import col
 # Access the 'math' score from the 'scores' map using getItem
 df_with_math = df.withColumn("math_score", col("scores").getItem("math"))
 display(df_with_math)
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC Row Class & Column Class
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC When() & Otherwise()
+# MAGIC It is similar to If-If Else
+
+# COMMAND ----------
+
+from pyspark.sql.functions import when, col
+
+# Use 'when' to create a new column 'math_grade' based on 'math' score
+df_with_math_grade = df.withColumn(
+    "math_grade",
+    when(col("scores").getItem("math") >= 90, "A")
+    .when(col("scores").getItem("math") >= 80, "B")
+    .otherwise("C")
+)
+
+display(df_with_math_grade)
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC
+
+# COMMAND ----------
+
+# DBTITLE 1,Cell 26
+display(df)
+df.printSchema()
+
+# COMMAND ----------
+
+# DBTITLE 1,Cell 26
+from pyspark.sql.functions import col, expr
+
+# alias: Rename a column for use in expressions or select
+df_alias = df.select(col("student_id").alias("id_alias"))
+display(df_alias)
+
+# asc: Sort DataFrame by a column in ascending order
+df_asc = df.orderBy(col("student_id").asc())
+display(df_asc)
+
+# desc: Sort DataFrame by a column in descending order
+df_desc = df.orderBy(col("student_id").desc())
+display(df_desc)
+
+# like: Filter rows where a column matches a pattern
+df_like = df.filter(col("student_id").like("S0%"))
+display(df_like)
+
