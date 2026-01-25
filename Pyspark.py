@@ -1,6 +1,6 @@
 # Databricks notebook source
 # MAGIC %md
-# MAGIC Load CSV to Dataframe
+# MAGIC Load CSV to Dataframe--Read
 
 # COMMAND ----------
 
@@ -12,7 +12,7 @@ display(df)
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC Load dataframe to CSV
+# MAGIC Load dataframe to CSV-Write
 
 # COMMAND ----------
 
@@ -52,6 +52,7 @@ df.coalesce(1).write.format("csv").mode("overwrite").save("/Volumes/test_catalog
 # COMMAND ----------
 
 # DBTITLE 1,Cell 7
+#Update data type
 from pyspark.sql.functions import col 
 df1=df.withColumn("customer_id",col("customer_id").cast("int"))
 display(df1)
@@ -60,12 +61,14 @@ display(df1)
 # COMMAND ----------
 
 # DBTITLE 1,Cell 8
+#Update Value
 from pyspark.sql.functions import col
 df1 = df1.withColumn("units_purchased", col("units_purchased") * 2)
 display(df1)
 
 # COMMAND ----------
 
+#new column addition
 from pyspark.sql.functions import *
 d1=df1.withColumn("new_date_column", current_timestamp())
 display(d1)
@@ -94,14 +97,15 @@ display(df1)
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC Split - Returns a new column with array type after splitting the column by delimiter
+# MAGIC Split() - Returns a new column with array type after splitting the column by delimiter
 # MAGIC
 # MAGIC
 # MAGIC
-# MAGIC Explode
+# MAGIC Explode() - It creates a new row for each element in the given array.
 # MAGIC
-# MAGIC It creates a new row for each element in the array
+# MAGIC Array()- It creates a new array column by merging data from various columns
 # MAGIC
+# MAGIC ArrayContains()- It is used to check if array column contains a value. Returns True/False value
 
 # COMMAND ----------
 
@@ -119,14 +123,14 @@ display(df_array)
 # COMMAND ----------
 
 from pyspark.sql.functions import explode
-
+#explodes the name array to different rows for each element
 df_exploded = df_array.withColumn("name_element", explode("name_array"))
 display(df_exploded)
 
 # COMMAND ----------
 
 from pyspark.sql.functions import *
-
+#creates a new column with an array after combining city and postcode
 df_array_trans = df_array.withColumn("address_array", array(col("city"), col("postcode")))
 display(df_array_trans)
 
@@ -134,4 +138,69 @@ display(df_array_trans)
 # COMMAND ----------
 
 # DBTITLE 1,Cell 17
-df.withColumn("address_array", array_contains(col("address_array"), "NY"))
+from pyspark.sql.functions import array_contains, col
+
+# Create a new column 'address_has_NY' that is True if 'address_array' contains 'NY'
+df_with_flag = df_array_trans.withColumn("address_has_NY", array_contains(col("address_array"), "NY"))
+
+display(df_with_flag)  # Databricks
+# or
+#df_with_flag.show()    # Standard PySpark
+
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC MapType()
+# MAGIC It is used to represent map key value pairs simislar to python dictionary.
+
+# COMMAND ----------
+
+from pyspark.sql.types import StructType, StructField, StringType, MapType, IntegerType
+from pyspark.sql import Row
+
+# Sample data (15 rows)
+data = [
+    Row(id="S01", scores={"math": 85, "science": 78, "english": 88}),
+    Row(id="S02", scores={"math": 92, "science": 81, "english": 90}),
+    Row(id="S03", scores={"math": 76, "science": 74, "english": 80}),
+    Row(id="S04", scores={"math": 89, "science": 90, "english": 87}),
+    Row(id="S05", scores={"math": 91, "science": 85, "english": 93}),
+    Row(id="S06", scores={"math": 68, "science": 72, "english": 75}),
+    Row(id="S07", scores={"math": 84, "science": 79, "english": 82}),
+    Row(id="S08", scores={"math": 95, "science": 94, "english": 96}),
+    Row(id="S09", scores={"math": 73, "science": 70, "english": 77}),
+    Row(id="S10", scores={"math": 88, "science": 86, "english": 84}),
+    Row(id="S11", scores={"math": 90, "science": 88, "english": 91}),
+    Row(id="S12", scores={"math": 82, "science": 80, "english": 83}),
+    Row(id="S13", scores={"math": 79, "science": 76, "english": 78}),
+    Row(id="S14", scores={"math": 87, "science": 85, "english": 89}),
+    Row(id="S15", scores={"math": 93, "science": 92, "english": 94})
+]
+
+# Schema definition
+schema = StructType([
+    StructField("student_id", StringType()),
+    StructField("scores", MapType(StringType(), IntegerType()))
+])
+
+# Create DataFrame
+df = spark.createDataFrame(data, schema)
+
+# Display
+df.show(truncate=False)
+df.printSchema()
+
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC .getItem()-->It is used to get the value of a key from a map
+
+# COMMAND ----------
+
+from pyspark.sql.functions import col
+
+# Access the 'math' score from the 'scores' map using getItem
+df_with_math = df.withColumn("math_score", col("scores").getItem("math"))
+display(df_with_math)
