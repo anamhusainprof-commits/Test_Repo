@@ -185,11 +185,11 @@ schema = StructType([
 ])
 
 # Create DataFrame
-df = spark.createDataFrame(data, schema)
+df_map = spark.createDataFrame(data, schema)
 
 # Display
-df.show(truncate=False)
-df.printSchema()
+df_map.show(truncate=False)
+df_map.printSchema()
 
 
 # COMMAND ----------
@@ -202,7 +202,7 @@ df.printSchema()
 from pyspark.sql.functions import col
 
 # Access the 'math' score from the 'scores' map using getItem
-df_with_math = df.withColumn("math_score", col("scores").getItem("math"))
+df_with_math = df_map.withColumn("math_score", col("scores").getItem("math"))
 display(df_with_math)
 
 # COMMAND ----------
@@ -221,7 +221,7 @@ display(df_with_math)
 from pyspark.sql.functions import when, col
 
 # Use 'when' to create a new column 'math_grade' based on 'math' score
-df_with_math_grade = df.withColumn(
+df_with_math_grade = df_map.withColumn(
     "math_grade",
     when(col("scores").getItem("math") >= 90, "A")
     .when(col("scores").getItem("math") >= 80, "B")
@@ -247,18 +247,294 @@ df.printSchema()
 from pyspark.sql.functions import col, expr
 
 # alias: Rename a column for use in expressions or select
-df_alias = df.select(col("student_id").alias("id_alias"))
+df_alias = df_map.select(col("student_id").alias("id_alias"))
 display(df_alias)
 
 # asc: Sort DataFrame by a column in ascending order
-df_asc = df.orderBy(col("student_id").asc())
+df_asc = df_map.orderBy(col("student_id").asc())
 display(df_asc)
 
 # desc: Sort DataFrame by a column in descending order
-df_desc = df.orderBy(col("student_id").desc())
+df_desc = df_map.orderBy(col("student_id").desc())
 display(df_desc)
 
 # like: Filter rows where a column matches a pattern
-df_like = df.filter(col("student_id").like("S0%"))
+df_like = df.filter(col("ship_to_address").like("IN%"))
 display(df_like)
+
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC Filter() or Where()
+# MAGIC
+# MAGIC Both are used to filter values from a column
+
+# COMMAND ----------
+
+# DBTITLE 1,Cell 28
+from pyspark.sql.functions import *
+df_state = df.filter(col('state').like('IN'))
+display(df_state)
+
+# COMMAND ----------
+
+from pyspark.sql.functions import *
+df_state=df.where(col('state').like('IN'))
+display(df)
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC distinct() = “remove exact same rows”
+# MAGIC
+# MAGIC dropDuplicates() = “remove duplicates based on chosen columns”
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC distinct():
+# MAGIC Used to remove duplicate rows from a DataFrame.
+# MAGIC
+# MAGIC
+
+# COMMAND ----------
+
+# DBTITLE 1,Cell 32
+from pyspark.sql.functions import *
+
+# Case 1: Get distinct values from a single column
+df_distinct_state = df.select('state').distinct()
+display(df_distinct_state)
+
+# Case 2: Get distinct combinations of multiple columns
+df_distinct_state_city = df.select('state', 'city').distinct()
+display(df_distinct_state_city)
+
+# Case 3: Get distinct rows across all columns
+df_distinct_all = df.distinct()
+display(df_distinct_all)
+
+# COMMAND ----------
+
+# Drop duplicate rows based on all columns
+df_no_duplicates = df.dropDuplicates()
+display(df_no_duplicates)
+
+# Drop duplicate rows based on specific columns, e.g., 'state' and 'city'
+df_no_duplicates_specific = df.dropDuplicates(['state', 'city'])
+display(df_no_duplicates_specific)
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC orderBy(): Sorts the DataFrame rows based on one or more columns, ascending by default.
+# MAGIC You can specify ascending or descending order for each column.
+# MAGIC
+# MAGIC sort(): Equivalent to orderBy(), sorts the DataFrame rows based on specified columns.
+# MAGIC
+# MAGIC Example usage:
+# MAGIC df.orderBy("column_name")
+# MAGIC df.sort("column_name")
+
+# COMMAND ----------
+
+# 'sort' and 'orderBy' are used to sort DataFrames by one or more columns.
+# Both methods are equivalent in Spark.
+
+# Example: Sort by 'student_id' in ascending order
+df_sorted_asc = df_map.sort("student_id")
+display(df_sorted_asc)
+
+# Example: Sort by 'student_id' in descending order
+df_sorted_desc = df_map.sort(col("student_id").desc())
+display(df_sorted_desc)
+
+# 'orderBy' works the same way
+df_ordered_asc = df_map.orderBy("student_id")
+display(df_ordered_asc)
+
+df_ordered_desc = df_map.orderBy(col("student_id").desc())
+display(df_ordered_desc)
+
+# COMMAND ----------
+
+# DBTITLE 1,Cell 37
+# Ensure both DataFrames have the same columns in the same order
+common_cols = [col for col in df.columns if col in df1.columns]
+df1_common = df1.select(*common_cols)
+df_common = df.select(*common_cols)
+
+# union: Returns the union of two DataFrames, removing duplicate rows
+df_union = df1_common.union(df_common)
+display(df_union)
+
+# unionAll: Deprecated and not supported in PySpark 3.x and above. Use union instead.
+# If you need to keep duplicates, union already does that.
+# There is no need to use unionAll.
+
+#To combine two PySpark DataFrames and ensure there are no duplicate rows, use union() followed by distinct()
+
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC #Aggregate() and GroupBy()
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC %undefined
+# MAGIC Understanding Aggregate and Group By in PySpark & SQL
+# MAGIC
+# MAGIC What is Group By?
+# MAGIC *Group By* is used to split data into groups based on the values of one or more columns. Each group contains rows that share the same value(s) in the specified column(s).
+# MAGIC
+# MAGIC **Example:**
+# MAGIC - Grouping sales data by `region` to analyze each region separately.
+# MAGIC
+# MAGIC What is Aggregate?
+# MAGIC *Aggregate* refers to applying summary functions (like SUM, AVG, COUNT, MIN, MAX) to each group created by `groupBy`. This produces a single result per group, summarizing the data.
+# MAGIC
+# MAGIC **Example:**
+# MAGIC - Calculating the total sales (`SUM`) or average sales (`AVG`) for each region.
+# MAGIC
+# MAGIC
+
+# COMMAND ----------
+
+# DBTITLE 1,Cell 38
+from pyspark.sql.functions import avg, sum, count, expr
+
+# groupBy: Groups the DataFrame using the specified column(s) and applies aggregate functions.
+
+# Example: Group by 'state' and calculate the average 'units_purchased' (use try_cast to tolerate malformed input)
+df_grouped_avg = df.groupBy("state").agg(expr("avg(try_cast(units_purchased as double))").alias("avg_units_purchased"))
+display(df_grouped_avg)
+
+# Example: Group by 'state' and 'city', and calculate the sum of 'units_purchased' (use try_cast)
+df_grouped_sum = df.groupBy("state", "city").agg(expr("sum(try_cast(units_purchased as double))").alias("total_units"))
+display(df_grouped_sum)
+
+# Example: Group by 'state' and count the number of rows in each group
+df_grouped_count = df.groupBy("state").agg(count("*").alias("row_count"))
+display(df_grouped_count)
+
+# GroupBy without aggregate: Returns a GroupedData object, not a DataFrame.
+grouped_data = df.groupBy("state")
+
+# To see the effect, you need to apply an aggregate or use .count(), .agg(), etc.
+# If you want to get unique groups as a DataFrame, use .select('state').distinct()
+df_groups = df.select("state").distinct()
+display(df_groups)
+
+# COMMAND ----------
+
+# GroupBy without aggregate: Returns a GroupedData object, not a DataFrame.
+grouped_data = df.groupBy("state")
+
+# To see the effect, you need to apply an aggregate or use .count(), .agg(), etc.
+# If you want to get unique groups as a DataFrame, use .select('state').distinct()
+df_groups = df.select("state").distinct()
+display(df_groups)
+
+# COMMAND ----------
+
+#unionByName combines two DataFrames by matching columns based on their names, not their positions.
+#If columns are missing in one DataFrame, you can set allowMissingColumns=True to fill those columns with nulls.
+#This is useful when DataFrames have different column orders or some columns are missing.
+#The resulting DataFrame contains all columns from both DataFrames, with rows aligned by column name.
+
+# COMMAND ----------
+
+from pyspark.sql import Row
+
+# Create two DataFrames with different columns and order
+data_a = [Row(id="A1", name="Alice", age=30), Row(id="A2", name="Bob", age=25)]
+data_b = [Row(name="Charlie", id="B1", city="NY"), Row(name="David", id="B2", city="LA")]
+
+df_a = spark.createDataFrame(data_a)
+df_b = spark.createDataFrame(data_b)
+
+# unionByName: Combines DataFrames by matching column names, not positions
+df_union_by_name = df_a.unionByName(df_b, allowMissingColumns=True)
+display(df_union_by_name)
+
+# COMMAND ----------
+
+from pyspark.sql import Row
+
+# Create sample DataFrames
+data_left = [Row(id=1, name="Alice"), Row(id=2, name="Bob"), Row(id=3, name="Charlie")]
+data_right = [Row(id=2, city="NY"), Row(id=3, city="LA"), Row(id=4, city="SF")]
+
+df_left = spark.createDataFrame(data_left)
+df_right = spark.createDataFrame(data_right)
+
+display(df_left)
+display(df_right)
+
+# Inner Join: Returns rows with matching keys in both DataFrames
+df_inner = df_left.join(df_right, on="id", how="inner")
+display(df_inner)
+
+# Left Outer Join: Returns all rows from the left DataFrame and matched rows from the right DataFrame
+df_left_outer = df_left.join(df_right, on="id", how="left")
+display(df_left_outer)
+
+# Right Outer Join: Returns all rows from the right DataFrame and matched rows from the left DataFrame
+df_right_outer = df_left.join(df_right, on="id", how="right")
+display(df_right_outer)
+
+# Full Outer Join: Returns all rows when there is a match in either left or right DataFrame
+df_full_outer = df_left.join(df_right, on="id", how="outer")
+display(df_full_outer)
+
+# Left Semi Join: Returns rows from the left DataFrame where there is a match in the right DataFrame (no columns from right)
+df_left_semi = df_left.join(df_right, on="id", how="left_semi")
+display(df_left_semi)
+
+# Left Anti Join: Returns rows from the left DataFrame where there is no match in the right DataFrame
+df_left_anti = df_left.join(df_right, on="id", how="left_anti")
+display(df_left_anti)
+
+# COMMAND ----------
+
+from pyspark.sql.functions import col, lower# Advanced join examples with additional conditions and column selection
+
+
+# Inner Join with additional condition (e.g., name starts with 'A')
+df_inner_adv = df_left.join(df_right, on="id", how="inner").where(col("name").startswith("A"))
+display(df_inner_adv)
+
+# Left Outer Join selecting specific columns and renaming
+df_left_outer_adv = df_left.join(df_right, on="id", how="left") \
+    .select(df_left["id"], df_left["name"], df_right["city"].alias("joined_city"))
+display(df_left_outer_adv)
+
+# Right Outer Join with filter (e.g., city is not null)
+df_right_outer_adv = df_left.join(df_right, on="id", how="right").filter(col("city").isNotNull())
+display(df_right_outer_adv)
+
+# Full Outer Join with coalesce to fill missing values
+from pyspark.sql.functions import coalesce, lit
+df_full_outer_adv = df_left.join(df_right, on="id", how="outer") \
+    .select(
+        coalesce(df_left["id"], df_right["id"]).alias("id"),
+        coalesce(df_left["name"], lit("Unknown")).alias("name"),
+        coalesce(df_right["city"], lit("Unknown")).alias("city")
+    )
+display(df_full_outer_adv)
+
+# Left Semi Join with additional filter (e.g., id > 1)
+df_left_semi_adv = df_left.join(df_right, on="id", how="left_semi").filter(col("id") > 1)
+display(df_left_semi_adv)
+
+# Left Anti Join with additional filter (e.g., name contains 'a')
+df_left_anti_adv = df_left.join(df_right, on="id", how="left_anti").filter(lower(col("name")).contains("a"))
+display(df_left_anti_adv)
+
+
+# COMMAND ----------
+
 
