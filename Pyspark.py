@@ -537,4 +537,112 @@ display(df_left_anti_adv)
 
 # COMMAND ----------
 
+# MAGIC %md
+# MAGIC json **multiline**
 
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC #fillna
+# MAGIC
+
+# COMMAND ----------
+
+# fillna is a DataFrame method used to replace null (None/NaN) values with specified values.
+# You can provide a single value to fill all nulls, or a dictionary to fill nulls in specific columns.
+# This is useful for data cleaning and ensuring downstream operations do not fail due to missing values.
+
+# Example: Fill all nulls with 0
+df_filled = df.fillna(0)
+
+# Example: Fill nulls in specific columns#
+#If state is missing, put "Unknown"
+#If units_purchased is missing, put 0”
+df_filled_cols = df.fillna({"state": "Unknown", "units_purchased": 0})
+
+display(df_filled)
+display(df_filled_cols)
+
+# COMMAND ----------
+
+# sample() is a DataFrame method that returns a random sample of rows.
+# It takes a fraction (between 0 and 1) to specify the proportion of the dataset to sample.
+# You can set 'withReplacement=True' to allow repeated rows, and 'seed' for reproducibility.
+
+# Example: Sample 20% of the DataFrame without replacement
+df_sampled = df.sample(withReplacement=False, fraction=0.2, seed=42)
+display(df_sampled)
+
+# Example: Sample 50% of the DataFrame with replacement
+df_sampled_wr = df.sample(withReplacement=True, fraction=0.5, seed=123)
+display(df_sampled_wr)
+
+# COMMAND ----------
+
+# collect() retrieves all rows of a DataFrame as a list of Row objects on the driver.
+# Use with caution for large DataFrames, as it can cause memory issues.
+
+rows = df.collect()  # Returns a list of Row objects
+# Example: Access the first row
+first_row = rows[0]
+
+# COMMAND ----------
+
+# createOrReplaceTempView registers a DataFrame as a temporary SQL table (view) in Spark.
+# If a view with the same name exists, it is replaced.
+# This allows you to run SQL queries on the DataFrame using spark.sql().
+# The view exists only for the duration of the Spark session.
+
+# Example: Register df_map as a temporary view named 'student_scores'
+df_map.createOrReplaceTempView("student_scores")
+
+# Now you can query it using SQL
+#SELECT student_id FROM student_scores WHERE scores>= 90
+#result = spark.sql("SELECT student_id, scores['math'] AS math_score FROM student_scores WHERE scores['math'] >= 90")
+#display(result)
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC SELECT lower(student_id) FROM student_scores
+
+# COMMAND ----------
+
+# MAGIC %skip
+# MAGIC # createOrReplaceGlobalTempView registers a DataFrame as a global temporary view in Spark.
+# MAGIC # Global temp views are accessible across all Spark sessions using the 'global_temp' database.
+# MAGIC # The view persists until the Spark application terminates.
+# MAGIC
+# MAGIC #GLOBAL TEMPORARY VIEW is not supported on serverless compute. SQLSTATE: 0A000
+# MAGIC
+# MAGIC # Example: Register df_map as a global temp view named 'student_scores_global'
+# MAGIC df_map.createOrReplaceGlobalTempView("student_scores_global")
+# MAGIC
+# MAGIC # Query the global temp view using the 'global_temp' database prefix
+# MAGIC #result = spark.sql("SELECT student_id, scores['math'] AS math_score FROM global_temp.student_scores_global WHERE scores['math'] >= 90")
+# MAGIC #display(result)
+
+# COMMAND ----------
+
+# A UDF (User Defined Function) allows you to define custom functions in Python and use them in Spark DataFrame operations.
+# UDFs are useful when built-in Spark functions do not provide the required functionality.
+# UDFs can be registered and used in DataFrame transformations or SQL queries.
+
+from pyspark.sql.functions import udf
+from pyspark.sql.types import StringType
+
+# Define a Python function
+def greet(name):
+    return f"Hello, {name}!"
+
+# Register the function as a UDF
+greet_udf = udf(greet, StringType())
+
+# Apply the UDF to a DataFrame column
+df_with_greeting = df_left.withColumn("greeting", greet_udf(df_left["name"]))
+display(df_with_greeting)
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC
