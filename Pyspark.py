@@ -543,6 +543,11 @@ display(df_left_anti_adv)
 # COMMAND ----------
 
 # MAGIC %md
+# MAGIC
+
+# COMMAND ----------
+
+# MAGIC %md
 # MAGIC #fillna
 # MAGIC
 
