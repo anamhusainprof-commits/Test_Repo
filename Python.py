@@ -1377,3 +1377,244 @@ print(myset)
 # MAGIC | `symmetric_difference_update()` | ^=  | Inserts the symmetric differences from this set and another                 |
 # MAGIC | `union()`                  | \|       | Returns a set containing the union of sets                                  |
 # MAGIC | `update()`                 | \|=      | Updates the set with the union of this set and others                       |
+
+# COMMAND ----------
+
+thisdict = {
+  "brand": "Ford",
+  "model": "Mustang",
+  "year": 1964
+}
+print (thisdict)
+print(len(thisdict))
+
+# COMMAND ----------
+
+thisdict = {
+  "brand": "Ford",
+  "electric": False,
+  "year": 1964,
+  "colors": ["red", "white", "blue"]
+}
+print (thisdict)
+print(len(thisdict))
+
+# COMMAND ----------
+
+thisdict = {
+  "brand": "Ford",
+  "model": "Mustang",
+  "year": 1964
+}
+x = thisdict["model"]
+print(x)
+
+# COMMAND ----------
+
+x = thisdict.get("model")
+print(x)
+
+# COMMAND ----------
+
+
+
+# COMMAND ----------
+
+x = thisdict.keys()
+print(x)
+
+# COMMAND ----------
+
+car = {
+"brand": "Ford",
+"model": "Mustang",
+"year": 1964
+}
+
+x = car.keys()
+
+print(x) #before the change
+
+car["color"] = "white"
+
+print(x) #after the c
+
+# COMMAND ----------
+
+x = thisdict.values()
+print(x)
+
+# COMMAND ----------
+
+car = {
+"brand": "Ford",
+"model": "Mustang",
+"year": 1964
+}
+
+x = car.values()
+
+print(x) #before the change
+
+car["year"] = 2020
+
+print(x) #after the change
+
+# COMMAND ----------
+
+#updating the dictionary
+thisdict = {
+  "brand": "Ford",
+  "model": "Mustang",
+  "year": 1964
+}
+thisdict["year"] = 2018
+print(thisdict)
+
+# COMMAND ----------
+
+thisdict = {
+  "brand": "Ford",
+  "model": "Mustang",
+  "year": 1964
+}
+thisdict["color"] = "red"
+print(thisdict)
+
+# COMMAND ----------
+
+thisdict = {
+  "brand": "Ford",
+  "model": "Mustang",
+  "year": 1964
+}
+del thisdict["model"]
+print(thisdict)
+
+# COMMAND ----------
+
+thisdict = {
+  "brand": "Ford",
+  "model": "Mustang",
+  "year": 1964
+}
+thisdict.pop("model")
+print(thisdict)
+
+# COMMAND ----------
+
+#only keys
+for x in thisdict:
+  print(x)
+
+# COMMAND ----------
+
+#only values
+for x in thisdict:
+  print(thisdict[x])
+
+# COMMAND ----------
+
+
+
+# COMMAND ----------
+
+for x, y in thisdict.items():
+  print(x, y)
+
+# COMMAND ----------
+
+thisdict = {
+  "brand": "Ford",
+  "model": "Mustang",
+  "year": 1964
+}
+mydict = thisdict.copy()
+print(mydict)
+
+# COMMAND ----------
+
+x = 6
+
+if x > 10:
+  print("Above ten,")
+  if x > 20:
+    print("and also above 20!")
+  else:
+    print("but not above 20.")
+else:
+  print("Below ten")
+
+# COMMAND ----------
+
+a = 33
+b = 200
+
+if b > a:
+  pass
+
+# COMMAND ----------
+
+age = 20
+
+if age < 18:
+  pass # TODO: Add underage logic later  # 'pass' means do nothing for now; underage logic can be added here
+else:
+  print("Access granted")  # This prints if age is 18 or older
+
+# COMMAND ----------
+
+day = 4
+match day:
+  case 1:
+    print("Monday")
+  case 2:
+    print("Tuesday")
+  case 3:
+    print("Wednesday")
+  case 4:
+    print("Thursday")
+  case 5:
+    print("Friday")
+  case 6:
+    print("Saturday")
+  case 7:
+    print("Sunday")
+
+# COMMAND ----------
+
+for x in "banana":
+  print(x)
+
+# COMMAND ----------
+
+fruits = ["apple", "banana", "cherry"]
+for x in fruits:
+  print(x)
+  if x == "banana":
+    break
+
+# COMMAND ----------
+
+fruits = ["apple", "banana", "cherry"]
+for x in fruits:
+  if x == "banana":
+    break
+  print(x)
+
+
+# COMMAND ----------
+
+def my_function(fname):
+  print(fname + " Refsnes")
+
+my_function("Emil")
+my_function("Tobias")
+my_function("Linus")
+
+# COMMAND ----------
+
+def my_function(name): # name is a parameter
+  print("Hello", name)
+
+my_function("Emil") # "E
