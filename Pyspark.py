@@ -1,5 +1,10 @@
 # Databricks notebook source
 # MAGIC %md
+# MAGIC WithColumn()
+
+# COMMAND ----------
+
+# MAGIC %md
 # MAGIC Load CSV to Dataframe--Read
 
 # COMMAND ----------
@@ -82,8 +87,18 @@ display(df1)
 
 # COMMAND ----------
 
+# MAGIC %skip
+# MAGIC If you want to explicitly cast it as Integer:
+# MAGIC     
+# MAGIC from pyspark.sql.types import IntegerType
+# MAGIC from pyspark.sql.functions import lit
+# MAGIC
+# MAGIC df = df.withColumn("new_column", lit(0).cast(IntegerType()))
+
+# COMMAND ----------
+
 # MAGIC %md
-# MAGIC #WithColumnRename
+# MAGIC #WithColumnRenameD
 # MAGIC
 # MAGIC Used to Rename Column
 
@@ -115,16 +130,23 @@ from pyspark.sql.functions import split, col
 #Split the column Customer_name into an array
 df_array = df.withColumn(
     "name_array",
-    split(col("Customer_name"), "\\,")
+    split(col("Customer_name"),"\\,")
 )
 display(df_array)
 
 
 # COMMAND ----------
 
+# MAGIC %md
+# MAGIC Value-level operations (inside the column) → use col().
+# MAGIC
+# MAGIC Structural operations (dataframe-level) → string column name is fine.
+
+# COMMAND ----------
+
 from pyspark.sql.functions import explode
 #explodes the name array to different rows for each element
-df_exploded = df_array.withColumn("name_element", explode("name_array"))
+df_exploded = df_array.withColumn("name_element", explode(col("name_array")))
 display(df_exploded)
 
 # COMMAND ----------
@@ -152,7 +174,7 @@ display(df_with_flag)  # Databricks
 
 # MAGIC %md
 # MAGIC MapType()
-# MAGIC It is used to represent map key value pairs simislar to python dictionary.
+# MAGIC It is used to represent map key value pairs similar to python dictionary.
 
 # COMMAND ----------
 
@@ -286,9 +308,9 @@ display(df)
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC distinct() = “remove exact same rows”
+# MAGIC distinct() = “remove exact same rows”--Used with select
 # MAGIC
-# MAGIC dropDuplicates() = “remove duplicates based on chosen columns”
+# MAGIC dropDuplicates() = “remove duplicates based on chosen columns”--Not used with select 
 
 # COMMAND ----------
 
@@ -379,7 +401,7 @@ display(df_union)
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC #Aggregate() and GroupBy()
+# MAGIC Aggregate and GroupBy
 
 # COMMAND ----------
 
@@ -486,7 +508,7 @@ display(df_left_outer)
 df_right_outer = df_left.join(df_right, on="id", how="right")
 display(df_right_outer)
 
-# Full Outer Join: Returns all rows when there is a match in either left or right DataFrame
+# Full Outer Join: This join type returns all rows from both DataFrames, filling in non-matching columns with null values
 df_full_outer = df_left.join(df_right, on="id", how="outer")
 display(df_full_outer)
 
